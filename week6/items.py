@@ -14,7 +14,9 @@ class Item:
     """
     An Item is a cleaned, curated datapoint of a Product with a Price
     """
-    
+    # class variables_START
+    # trust_remote_code=True allows execution of Python code proveded to Hugging Face
+    # by some third-party models
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
     PREFIX = "Price is $"
     QUESTION = "How much does this cost to the nearest dollar?"
@@ -27,6 +29,7 @@ class Item:
     details: Optional[str]
     prompt: Optional[str] = None
     include = False
+    # class variables_END
 
     def __init__(self, data, price):
         self.title = data['title']
@@ -70,6 +73,8 @@ class Item:
         if len(contents) > MIN_CHARS:
             contents = contents[:CEILING_CHARS]
             text = f"{self.scrub(self.title)}\n{self.scrub(contents)}"
+            # add_special_tokens=False will not allow any model-specific control tokens like [CLS], [SEP], etc.
+            # and only allow the text itself to be tokenized
             tokens = self.tokenizer.encode(text, add_special_tokens=False)
             if len(tokens) > MIN_TOKENS:
                 tokens = tokens[:MAX_TOKENS]
