@@ -15,6 +15,7 @@ class ItemLoader:
         self.name = name
         self.dataset = None
 
+    # datapoint is a dictionary
     def from_datapoint(self, datapoint):
         """
         Try to create an Item from this datapoint
@@ -30,6 +31,7 @@ class ItemLoader:
         except ValueError:
             return None
 
+    # chunk is a list[Datapoint], method returns list[Item]
     def from_chunk(self, chunk):
         """
         Create a list of Items from this chunk of elements from the Dataset
