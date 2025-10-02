@@ -15,22 +15,29 @@ class Item:
     An Item is a cleaned, curated datapoint of a Product with a Price
     """
     # class variables_START
-    # trust_remote_code=True allows execution of Python code proveded to Hugging Face
+    # trust_remote_code=True allows execution of Python code provided to Hugging Face
     # by some third-party models
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
     PREFIX = "Price is $"
     QUESTION = "How much does this cost to the nearest dollar?"
     REMOVALS = ['"Batteries Included?": "No"', '"Batteries Included?": "Yes"', '"Batteries Required?": "No"', '"Batteries Required?": "Yes"', "By Manufacturer", "Item", "Date First", "Package", ":", "Number of", "Best Sellers", "Number", "Product "]
+    # class variables_END
 
+    # bad practice_START
+    # class variables which are shadowed by instance variables
+    include = False # without type annotation
+    prompt: Optional[str] = None # with type annotation
+    token_count: int = 0 # with type annotation
+    # bad practice_END
+    
+
+    # instance variable type annotations per PEP 526_START
     title: str
     price: float
     category: str
-    token_count: int = 0
     details: Optional[str]
-    prompt: Optional[str] = None
-    include = False
-    # class variables_END
-
+    # instance variable type annotations per PEP 526_END
+    
     def __init__(self, data, price):
         self.title = data['title']
         self.price = price
