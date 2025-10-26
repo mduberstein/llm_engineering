@@ -1,9 +1,9 @@
-import modal
+#import modal
 from modal import App, Image
 
 # Setup
-
-app = modal.App("hello")
+# app = modal.App("hello")
+app = App("hello")
 image = Image.debian_slim().pip_install("requests")
 
 # Hello!
