@@ -2,7 +2,7 @@ import logging
 
 class Agent:
     """
-    An abstract superclass for Agents
+    An superclass for Agents
     Used to log messages in a way that can identify each Agent
     """
 

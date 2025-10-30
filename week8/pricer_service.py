@@ -7,7 +7,8 @@ app = modal.App("pricer-service")
 image = Image.debian_slim().pip_install("torch", "transformers", "bitsandbytes", "accelerate", "peft")
 
 # This collects the secret from Modal.
-# Depending on your Modal configuration, you may need to replace "hf-secret" with "huggingface-secret"
+# Secrets should be stored under the category hf-secret with the key HF_TOKEN containing the Hugging Face token. 
+# If you use a different category, update the code accordingly, ex. replace "hf-secret" with "huggingface-secret"
 secrets = [modal.Secret.from_name("hf-secret")]
 
 # Constants

@@ -26,8 +26,11 @@ def generate(prompt: str) -> str:
     )
 
     # Load model and tokenizer
-    
+    print("Losing secrets...")
+    print(f"{secrets}")
+    print("Before Loading model and tokenizer...") 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    print("Tokenizer loaded.")
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
     
