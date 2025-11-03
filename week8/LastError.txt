@@ -1,0 +1,64 @@
+---------------------------------------------------------------------------
+OSError                                   Traceback (most recent call last)
+Cell In[8], line 3
+      1 with modal.enable_output():
+      2     with app.run():
+----> 3         result=generate.remote("Life is a mystery, everyone must stand alone, I hear")
+      4 result
+
+File /opt/anaconda3/envs/llms/lib/python3.11/site-packages/modal/_object.py:304, in live_method.<locals>.wrapped(self, *args, **kwargs)
+    301 @wraps(method)
+    302 async def wrapped(self, *args, **kwargs):
+    303     await self.hydrate()
+--> 304     return await method(self, *args, **kwargs)
+
+File /opt/anaconda3/envs/llms/lib/python3.11/site-packages/modal/_functions.py:1741, in _Function.remote(self, *args, **kwargs)
+   1736 if self._is_generator:
+   1737     raise InvalidError(
+   1738         "A generator function cannot be called with `.remote(...)`. Use `.remote_gen(...)` instead."
+   1739     )
+-> 1741 return await self._call_function(args, kwargs)
+
+File /opt/anaconda3/envs/llms/lib/python3.11/site-packages/modal/_functions.py:1685, in _Function._call_function(self, args, kwargs)
+   1676 else:
+   1677     invocation = await _Invocation.create(
+   1678         self,
+   1679         args,
+   (...)   1682         function_call_invocation_type=api_pb2.FUNCTION_CALL_INVOCATION_TYPE_SYNC,
+   1683     )
+-> 1685 return await invocation.run_function()
+
+File /opt/anaconda3/envs/llms/lib/python3.11/site-packages/modal/_functions.py:297, in _Invocation.run_function(self)
+    289 if (
+    290     not ctx
+    291     or not ctx.retry_policy
+   (...)    294     or not ctx.sync_client_retries_enabled
+    295 ):
+    296     item = await self._get_single_output()
+--> 297     return await _process_result(item.result, item.data_format, self.stub, self.client)
+    299 # User errors including timeouts are managed by the user specified retry policy.
+    300 user_retry_manager = RetryManager(ctx.retry_policy)
+
+File /opt/anaconda3/envs/llms/lib/python3.11/site-packages/modal/_utils/function_utils.py:533, in _process_result(result, data_format, stub, client)
+    530             except Exception:
+    531                 pass
+--> 533         raise exc_with_hints(exc)
+    535     raise RemoteError(result.exception)
+    537 try:
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/root/llama.py:36, in generate()
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/usr/local/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py:1093, in from_pretrained()
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/usr/local/lib/python3.11/site-packages/transformers/models/auto/configuration_auto.py:1332, in from_pretrained()
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/usr/local/lib/python3.11/site-packages/transformers/configuration_utils.py:662, in get_config_dict()
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/usr/local/lib/python3.11/site-packages/transformers/configuration_utils.py:721, in _get_config_dict()
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/usr/local/lib/python3.11/site-packages/transformers/utils/hub.py:322, in cached_file()
+
+File <ta-01K8GX3N5SB5T3KZTQCFM4FARS>:/usr/local/lib/python3.11/site-packages/transformers/utils/hub.py:553, in cached_files()
+
+OSError: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
