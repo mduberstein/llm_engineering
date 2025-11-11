@@ -45,7 +45,7 @@ class MessagingAgent(Agent):
           to=self.me_to
         )
 
-    def push(self, text):
+    def push_Ed(self, text):
         """
         Send a Push Notification using the Pushover API
         """
@@ -58,7 +58,49 @@ class MessagingAgent(Agent):
             "message": text,
             "sound": "cashregister"
           }), { "Content-type": "application/x-www-form-urlencoded" })
-        conn.getresponse()
+        response = conn.getresponse()
+        self.log(f"Pushover response: {response.status} {response.reason}")
+
+    def push(self, text: str):
+        """
+        Send a Push Notification using the Pushover API
+        Includes error handling and detailed logging
+        """
+        self.log("Messaging Agent is sending a push notification")
+        try:
+            # Step 1:Prepare connection
+            conn = http.client.HTTPSConnection("api.pushover.net:443", timeout=10)
+            # Step 2: Prepare request body
+            payload = urllib.parse.urlencode({
+                "token": self.pushover_token,
+                "user": self.pushover_user,
+                "message": text,
+                "sound": "cashregister"
+            })
+            headers = { "Content-type": "application/x-www-form-urlencoded" }
+            # Step 3: Send request
+            conn.request("POST", "/1/messages.json", payload, headers)
+            # Step 4: Receive and inspect response
+            response = conn.getresponse()
+            status = response.status
+            reason = response.reason
+            body = response.read().decode('utf-8', errors='ignore')
+            # Step 5: Handle resullts
+            if 200 <= status < 300:
+                self.log(f"Pushover notification sent successfully: {status} {reason}")
+            else:
+                self.log(f"⚠️ Failed to send notification: {status} {reason} | Response: {body}")
+        except Exception as e:
+            self.log(f"❌ Exception while sending Pushover message: {str(e)}")
+        finally:
+            try:
+                conn.close()
+            except Exception as e:
+                self.log(f"❌ Exception while closing Pushover connection: {str(e)}")
+
+
+
+  
 
     def alert(self, opportunity: Opportunity):
         """
