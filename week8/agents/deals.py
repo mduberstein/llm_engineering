@@ -19,13 +19,19 @@ def extract(html_snippet: str) -> str:
     """
     Use Beautiful Soup to clean up this HTML snippet and extract useful text
     """
+    #'html.parser' is built-in Python parser
+    # soup is DOM-like object allwowing structured access to HTML elements
     soup = BeautifulSoup(html_snippet, 'html.parser')
     snippet_div = soup.find('div', class_='snippet summary')
     
     if snippet_div:
+        # Extract text content from the div element, stripping leading/trailing whitespace
         description = snippet_div.get_text(strip=True)
+        # Double parsing to ensure all HTML tags are removed
         description = BeautifulSoup(description, 'html.parser').get_text()
+        # remove anything that loosk like <...>
         description = re.sub('<[^<]+?>', '', description)
+        # Final cleanup: strip leading/trailing whitespace
         result = description.strip()
     else:
         result = html_snippet
@@ -47,11 +53,15 @@ class ScrapedDeal:
         Populate this instance based on the provided dict
         """
         self.title = entry['title']
+        # Each RSS entry usually includes a short HTML snippet as a summary
         self.summary = extract(entry['summary'])
+        # Extract the first <link> entry — typically the actual web page URL for that deal
         self.url = entry['links'][0]['href']
+        # Doownload the full HTML content of that URL
         stuff = requests.get(self.url).content
         soup = BeautifulSoup(stuff, 'html.parser')
         content = soup.find('div', class_='content-section').get_text()
+        
         content = content.replace('\nmore', '').replace('\n', ' ')
         if "Features" in content:
             self.details, self.features = content.split("Features")
@@ -79,12 +89,17 @@ class ScrapedDeal:
         deals = []
         feed_iter = tqdm(feeds) if show_progress else feeds
         for feed_url in feed_iter:
+            # parse the RSS feed
             feed = feedparser.parse(feed_url)
+            # limit to first 10 entries per feed
             for entry in feed.entries[:10]:
+                # call constructor to create a new ScrapedDeal instance
                 deals.append(cls(entry))
+                # don't abuse the server
                 time.sleep(0.5)
         return deals
 
+# BaseModel class from Pydantic package makes it easy to switch from Python classes to JSON
 class Deal(BaseModel):
     """
     A class to Represent a Deal with a summary description
@@ -98,6 +113,14 @@ class DealSelection(BaseModel):
     A class to Represent a list of Deals
     """
     deals: List[Deal]
+    # { "deals": [
+    #     {
+    #         "product_description": "Sample Product",
+    #         "price": 99.99,
+    #         "url": "http://example.com"
+    #     },
+    #     ....
+    # ]}
 
 class Opportunity(BaseModel):
     """

@@ -54,6 +54,7 @@ class ScannerAgent(Agent):
         self.log("Scanner Agent is about to fetch deals from RSS feed")
         urls = [opp.deal.url for opp in memory]
         scraped = ScrapedDeal.fetch()
+        # exclude any deals already in memory
         result = [scrape for scrape in scraped if scrape.url not in urls]
         self.log(f"Scanner Agent received {len(result)} deals not already scraped")
         return result
