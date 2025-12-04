@@ -40,6 +40,7 @@ def extract(html_snippet: str) -> str:
 class ScrapedDeal:
     """
     A class to represent a Deal retrieved from an RSS feed
+    Usage: ScrapedDeal.fetch(progress = True) to retrieve a list of deals
     """
     category: str
     title: str
