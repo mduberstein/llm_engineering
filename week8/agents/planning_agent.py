@@ -17,8 +17,11 @@ class PlanningAgent(Agent):
         Create instances of the 3 Agents that this planner coordinates across
         """
         self.log("Planning Agent is initializing")
+        # responsible for finding deals
         self.scanner = ScannerAgent()
+        # calls three different models to estimate product prices
         self.ensemble = EnsembleAgent(collection)
+        # sends notifications about deals
         self.messenger = MessagingAgent()
         self.log("Planning Agent is ready")
 
