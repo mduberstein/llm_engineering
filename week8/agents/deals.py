@@ -65,7 +65,12 @@ class ScrapedDeal:
         
         content = content.replace('\nmore', '').replace('\n', ' ')
         if "Features" in content:
-            self.details, self.features = content.split("Features")
+            feature_parts = content.split("Features")
+            self.details = feature_parts[0]
+            if len(feature_parts) > 2:
+                self.features = " ".join(feature_parts[1:])
+            else:
+                self.features = feature_parts[1]
         else:
             self.details = content
             self.features = ""
@@ -86,6 +91,8 @@ class ScrapedDeal:
     def fetch(cls, show_progress : bool = False) -> List[Self]:
         """
         Retrieve all deals from the selected RSS feeds
+        Limit output to 10 deals per feed.
+        with 5 feeds, it returns a list of 50 scraped deals
         """
         deals = []
         feed_iter = tqdm(feeds) if show_progress else feeds
