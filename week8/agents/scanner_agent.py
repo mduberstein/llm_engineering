@@ -2,7 +2,7 @@ import os
 import json
 from typing import Optional, List
 from openai import OpenAI
-from agents.deals import ScrapedDeal, DealSelection
+from agents.deals import ScrapedDeal, DealSelection, Opportunity
 from agents.agent import Agent
 
 
@@ -68,13 +68,18 @@ class ScannerAgent(Agent):
         user_prompt += self.USER_PROMPT_SUFFIX
         return user_prompt
 
-    def scan(self, memory: List[str]=[]) -> Optional[DealSelection]:
+    # DealSelection is defined in deals.py subclass of pydantic BaseModel containing 
+    # one field - deals: List[Deal], DealSelection is the example of structured output from the LLM
+    def scan(self, memory: Optional[List[Opportunity]] = None) -> Optional[DealSelection]:
         """
         Call OpenAI to provide a high potential list of deals with good descriptions and prices
         Use StructuredOutputs to ensure it conforms to our specifications
         :param memory: a list of URLs representing deals already raised
         :return: a selection of good deals, or None if there aren't any
         """
+        if memory is None:
+            memory = []
+        self.log("Scanner Agent is starting a scan for new deals")
         scraped = self.fetch_deals(memory)
         if scraped:
             user_prompt = self.make_user_prompt(scraped)
