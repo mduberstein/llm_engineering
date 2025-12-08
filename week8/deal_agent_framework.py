@@ -43,7 +43,9 @@ class DealAgentFramework:
         init_logging()
         load_dotenv()
         client = chromadb.PersistentClient(path=self.DB)
+        # memory is the list of Opportunity instances backed up by the memory.json file
         self.memory = self.read_memory()
+        # retrieve the ChromaDB collection for RAG
         self.collection = client.get_or_create_collection('products')
         self.planner = None
 
@@ -70,9 +72,13 @@ class DealAgentFramework:
         text = BG_BLUE + WHITE + "[Agent Framework] " + message + RESET
         logging.info(text)
 
+    # ENTRY POINT for the class DealAgentFramework
     def run(self) -> List[Opportunity]:
         self.init_agents_as_needed()
         logging.info("Kicking off Planning Agent")
+        # passing the List of already fully processessed Opportunities,
+        # that has been pessisted in the memory.json file
+        # the call to plan returns a single fully processed Opportunity
         result = self.planner.plan(memory=self.memory)
         logging.info(f"Planning Agent has completed and returned: {result}")
         if result:
