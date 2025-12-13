@@ -1,10 +1,14 @@
 import gradio as gr
 from deal_agent_framework import DealAgentFramework
 from agents.deals import Opportunity, Deal
+import threading
 
 class App:
+    instance_count = 0
+    _framework_lock = threading.Lock()
 
-    def __init__(self):    
+    def __init__(self):
+        App.instance_count += 1  
         self.agent_framework = None
 
     def run(self):
@@ -14,21 +18,46 @@ class App:
                 return [[opp.deal.product_description, f"${opp.deal.price:.2f}", f"${opp.estimate:.2f}", f"${opp.discount:.2f}", opp.deal.url] for opp in opps]
         
             def start():
-                self.agent_framework = DealAgentFramework()
-                self.agent_framework.init_agents_as_needed()
-                opportunities = self.agent_framework.memory
+                print(f"In start, App instance #{App.instance_count}")
+                with App._framework_lock:
+                    if self.agent_framework is None:
+                        print(f"In start, App._framework_lock acquired")
+                        self.agent_framework = DealAgentFramework()
+                        # redundant as self.agent_framework.init_agents_as_needed() called in run
+                        # self.agent_framework.init_agents_as_needed()
+                print(f"In start, App._framework_lock released")
+                opportunities = self.agent_framework.get_memory() 
                 table = table_for(opportunities)
                 return table
-        
+            # go is called every 60 seconds by the Timer component only
             def go():
-                self.agent_framework.run()
-                new_opportunities = self.agent_framework.memory
+                '''
+                Run agent framework to update the list of opporunities with new 
+                a new fully processed one per call
+                '''
+                with App._framework_lock:
+                    print(f"In go, App._framework_lock acquired")
+                    if self.agent_framework is None:
+                        print(f"In go, App._framework_lock return")
+                        return
+                print(f"In go, App._framework_lock released")
+                self.agent_framework.run()   
+                new_opportunities = self.agent_framework.get_memory()
                 table = table_for(new_opportunities)
                 return table
         
             def do_select(selected_index: gr.SelectData):
-                opportunities = self.agent_framework.memory
+                with App._framework_lock:
+                    print(f"In do_select, App._framework_lock acquired")
+                    if self.agent_framework is None:
+                        print(f"In do_select, App._framework_lock return")
+                        return
+
+                print(f"In do_select, App._framework_lock released")    
+                opportunities = self.agent_framework.get_memory()
                 row = selected_index.index[0]
+                if row < 0 or row >= len(opportunities):
+                    return
                 opportunity = opportunities[row]
                 self.agent_framework.planner.messenger.alert(opportunity)
         
@@ -49,9 +78,11 @@ class App:
                 )
         
             ui.load(start, inputs=[], outputs=[opportunities_dataframe])
-
+            
+            print(f"In run, before timer, App instance #{App.instance_count}")
             timer = gr.Timer(value=60)
             timer.tick(go, inputs=[], outputs=[opportunities_dataframe])
+            print(f"In run, after timer, App instance #{App.instance_count}")
 
             opportunities_dataframe.select(do_select)
         
